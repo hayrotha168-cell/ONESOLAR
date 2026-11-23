@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { CableCalculator } from '@/components/CableCalculator';
 import { SunSurvey } from '@/components/SunSurvey';
 import { Projects } from '@/components/Projects';
+import { Settings } from '@/components/Settings';
 import { AuthGate, useAuth } from '@/lib/auth';
 import { LangProvider, useT } from '@/lib/i18n';
 
-type Tab = 'cable' | 'sun' | 'projects';
+type Tab = 'cable' | 'sun' | 'projects' | 'settings';
 
 interface InstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -33,7 +34,7 @@ function App() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('onesolar.tab');
-      if (saved === 'cable' || saved === 'sun' || saved === 'projects') setTab(saved);
+      if (saved === 'cable' || saved === 'sun' || saved === 'projects' || saved === 'settings') setTab(saved);
     } catch {}
     const onPrompt = (e: Event) => {
       e.preventDefault();
@@ -102,7 +103,7 @@ function App() {
       </header>
 
       <main key={gen}>
-        {tab === 'cable' ? <CableCalculator /> : tab === 'sun' ? <SunSurvey /> : <Projects onOpen={() => { setGen((g) => g + 1); select('sun'); }} />}
+        {tab === 'cable' ? <CableCalculator /> : tab === 'sun' ? <SunSurvey /> : tab === 'settings' ? <Settings /> : <Projects onOpen={() => { setGen((g) => g + 1); select('sun'); }} />}
       </main>
 
       <nav className="tabbar" role="tablist">
@@ -117,6 +118,10 @@ function App() {
         <button role="tab" aria-selected={tab === 'projects'} className={tab === 'projects' ? 'active' : ''} onClick={() => select('projects')}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4z" /><path d="M8 12h8M8 15h5" /></svg>
           {t.tabProjects}
+        </button>
+        <button role="tab" aria-selected={tab === 'settings'} className={tab === 'settings' ? 'active' : ''} onClick={() => select('settings')}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>
+          {t.settings}
         </button>
       </nav>
     </>

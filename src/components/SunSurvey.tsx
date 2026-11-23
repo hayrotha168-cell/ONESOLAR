@@ -11,7 +11,7 @@ import { startOrientation } from '@/lib/orientation';
 import { useAuth } from '@/lib/auth';
 import { Project, newId, readCable, saveProject, snapshot3D } from '@/lib/projects';
 import { makeReportPdf, sharePdf } from '@/lib/report';
-import { Currency, DEFAULT_PRICE, PRICE_KEY, Price, fmtMoney, monthName, productionStats } from '@/lib/energy';
+import { DEFAULT_PRICE, PRICE_KEY, Price, fmtMoney, monthName, productionStats } from '@/lib/energy';
 import { Stat } from './Stat';
 import { SensorSurvey } from './SensorSurvey';
 
@@ -167,7 +167,7 @@ export function SunSurvey() {
   const yearKwh = annual ? annual.kwh * kWp * pr : 0;
   const monthKwh = annual ? annual.months.map((m) => m.kwh * kWp * pr) : [];
   const prod = productionStats(monthKwh);
-  const [price, setPrice] = useStored<Price>(PRICE_KEY, DEFAULT_PRICE);
+  const [price] = useStored<Price>(PRICE_KEY, DEFAULT_PRICE); // set on the Settings tab
   const cost = Number.isFinite(price.value) && price.value > 0 ? price.value : 0;
   const money = (kwh: number) => fmtMoney(kwh * cost, price.currency);
   const setArr = (k: 'count' | 'watt' | 'pr') => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -331,26 +331,6 @@ export function SunSurvey() {
         )}
         {monthKwh.length > 0 && kWp > 0 && <MonthChart values={monthKwh} labels={t.months} caption={t.monthly} />}
         <p className="small muted full" style={{ margin: 0 }}>{t.clearSkyNote}</p>
-      </div>
-
-      <div className="card grid">
-        <h2 className="full">⚙️ {t.settings}</h2>
-        <label>{t.elecPrice}
-          <input type="number" inputMode="decimal" step="any" min={0} value={price.value}
-            onChange={(e) => setPrice((pr0) => ({ ...pr0, value: parseFloat(e.target.value) }))} />
-        </label>
-        <label>{t.currencyLabel}
-          <select value={price.currency} onChange={(e) => {
-            const currency = e.target.value as Currency;
-            // Switch to a sensible tariff in the new currency (about 4,100 riel to the dollar).
-            setPrice((pr0) => ({ currency, value: pr0.currency === currency ? pr0.value
-              : currency === 'KHR' ? Math.round(pr0.value * 4100) : +(pr0.value / 4100).toFixed(3) }));
-          }}>
-            <option value="USD">USD ($)</option>
-            <option value="KHR">KHR (៛)</option>
-          </select>
-        </label>
-        <p className="small muted full" style={{ margin: 0 }}>{t.priceHelp}</p>
       </div>
 
       {day && (
