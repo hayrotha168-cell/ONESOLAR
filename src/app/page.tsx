@@ -5,6 +5,7 @@ import { SunSurvey } from '@/components/SunSurvey';
 import { Projects } from '@/components/Projects';
 import { Settings } from '@/components/Settings';
 import { AuthGate, useAuth } from '@/lib/auth';
+import { UpdateProvider, useUpdates } from '@/lib/updates';
 import { LangProvider, useT } from '@/lib/i18n';
 
 type Tab = 'cable' | 'sun' | 'projects' | 'settings';
@@ -17,9 +18,11 @@ interface InstallPromptEvent extends Event {
 export default function Home() {
   return (
     <LangProvider>
-      <AuthGate>
-        <App />
-      </AuthGate>
+      <UpdateProvider>
+        <AuthGate>
+          <App />
+        </AuthGate>
+      </UpdateProvider>
     </LangProvider>
   );
 }
@@ -106,6 +109,8 @@ function App() {
         {tab === 'cable' ? <CableCalculator /> : tab === 'sun' ? <SunSurvey /> : tab === 'settings' ? <Settings /> : <Projects onOpen={() => { setGen((g) => g + 1); select('sun'); }} />}
       </main>
 
+      <UpdateBanner />
+
       <nav className="tabbar" role="tablist">
         <button role="tab" aria-selected={tab === 'cable'} className={tab === 'cable' ? 'active' : ''} onClick={() => select('cable')}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h12M4 7V4m0 3v3M20 19v-3m0 3v3" /></svg>
@@ -125,5 +130,19 @@ function App() {
         </button>
       </nav>
     </>
+  );
+}
+
+/** Shown above the bottom menu when a newer release is live. */
+function UpdateBanner() {
+  const { t } = useT();
+  const { status, latest, apply, dismissed, dismiss } = useUpdates();
+  if (status !== 'available' || dismissed) return null;
+  return (
+    <div className="update-banner" role="status">
+      <span>🎉 {t.updateAvailable(latest ?? '')}</span>
+      <button className="btn btn-small" type="button" onClick={apply}>{t.updateNow}</button>
+      <button className="btn btn-small btn-ghost" type="button" onClick={dismiss}>{t.later}</button>
+    </div>
   );
 }

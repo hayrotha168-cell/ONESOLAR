@@ -3,6 +3,8 @@ import { useAuth } from '@/lib/auth';
 import { Currency, DEFAULT_PRICE, PRICE_KEY, Price } from '@/lib/energy';
 import { useT } from '@/lib/i18n';
 import { useStored } from '@/lib/useStored';
+import { useUpdates } from '@/lib/updates';
+import { APP_VERSION, BUILD_TIME, CHANGELOG, COMMIT } from '@/lib/version';
 
 const RIEL_PER_USD = 4100;
 
@@ -10,6 +12,8 @@ export function Settings() {
   const { t, lang, setLang } = useT();
   const { user, required, logout } = useAuth();
   const [price, setPrice] = useStored<Price>(PRICE_KEY, DEFAULT_PRICE);
+  const { status, latest, check, apply } = useUpdates();
+  const built = BUILD_TIME ? new Date(BUILD_TIME).toLocaleDateString(lang === 'km' ? 'km-KH' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
   const changeCurrency = (currency: Currency) =>
     // Convert the tariff so it stays about the same in the new currency.
@@ -44,6 +48,38 @@ export function Settings() {
           <button type="button" role="radio" aria-checked={lang === 'km'} className={lang === 'km' ? 'on' : ''} onClick={() => setLang('km')}>ខ្មែរ</button>
           <button type="button" role="radio" aria-checked={lang === 'en'} className={lang === 'en' ? 'on' : ''} onClick={() => setLang('en')}>English</button>
         </div>
+      </div>
+
+      <div className="card">
+        <h2>{t.appVersion}</h2>
+        <div className="version-row">
+          <span className="version-num">v{APP_VERSION}</span>
+          <span className="small muted">{built && `${t.builtOn} ${built}`}{COMMIT && ` · ${COMMIT}`}</span>
+        </div>
+        {status === 'available' ? (
+          <div className="row">
+            <span className="pill ok">{t.updateAvailable(latest ?? '')}</span>
+            <button className="btn" type="button" onClick={apply}>{t.updateNow}</button>
+          </div>
+        ) : (
+          <div className="row">
+            <button className="btn btn-ghost" type="button" onClick={check} disabled={status === 'checking'}>
+              {status === 'checking' ? t.checking : `↻ ${t.checkUpdates}`}
+            </button>
+          </div>
+        )}
+        {status === 'current' && <p className="small v-ok" style={{ margin: 0 }}>✓ {t.upToDate}</p>}
+        {status === 'offline' && <p className="small muted" style={{ margin: 0 }}>{t.updateOffline}</p>}
+
+        <details style={{ marginTop: 10 }}>
+          <summary>{t.whatsNew}</summary>
+          {CHANGELOG.map((r) => (
+            <div key={r.version} className="release">
+              <div><b>v{r.version}</b> <span className="small muted">{r.date}</span></div>
+              <ul className="small">{(lang === 'km' ? r.km : r.en).map((line) => <li key={line}>{line}</li>)}</ul>
+            </div>
+          ))}
+        </details>
       </div>
 
       {required && user && (

@@ -67,3 +67,18 @@ List registered users: `npx wrangler kv key list --binding USERS --remote`
 IndexedDB on the device. The **Projects** tab lists them; **Share PDF** builds an A4 survey report
 (project info, 3D view, sun, PV design, energy, cable sizing, standards, signature block) and opens the
 phone's share sheet, or downloads the file on desktop.
+
+## Versions and updates
+
+The app version comes from `version` in `package.json` and is shown under **Settings → App version**,
+with the release date, git commit and a "What's new" list (`src/lib/version.ts`).
+
+Each build publishes `/version.json`. Open apps check it on start, when brought back to the screen and
+every 30 minutes. When a newer build is live they show **New version available → Update now**.
+
+To publish a release:
+1. Raise `version` in `package.json` (for example `1.2.0` → `1.3.0`).
+2. Add the release notes at the top of `CHANGELOG` in `src/lib/version.ts`, in English and Khmer.
+3. Commit, then `npm run deploy`.
+
+To test a production build locally (no Telegram sign-in): `npx next build`, then `npx wrangler dev --local`.
