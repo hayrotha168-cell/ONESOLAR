@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "onesolar",
+  "compatibility_date": "2026-11-01",
+  // Small API for Telegram sign-in; everything else is the static Next.js export in ./out.
+  "main": "worker/index.ts",
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": ["/api/*"]
+  },
+  // Registered Telegram users (key "user:<telegram id>").
+  "kv_namespaces": [{ "binding": "USERS", "id": "3a53bb401568422381e57122bc5bfc1c" }],
+  // Secret, set with: npx wrangler secret put TELEGRAM_BOT_TOKEN
+  // Cloudflare creates the DNS record and certificate for this hostname on deploy.
+  // The 1dev.biz zone must be in the same Cloudflare account.
+  "routes": [{ "pattern": "onesolar.1dev.biz", "custom_domain": true }],
+  "workers_dev": false
+}

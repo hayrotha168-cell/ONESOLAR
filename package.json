@@ -1,0 +1,31 @@
+{
+  "name": "onesolar",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/check-cable.mts && node scripts/check-orientation.mts && node scripts/check-auth.mts",
+    "deploy": "next build && wrangler deploy"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "html2canvas-pro": "^2.6.4",
+    "jspdf": "^4.2.1",
+    "next": "^15.5.29",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.187.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.166.0"
+  }
+}
