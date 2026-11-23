@@ -17,6 +17,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.3.0',
+    date: '2026-11-23',
+    en: [
+      'Dark mode: choose Auto, Light or Dark in Settings, or tap ☀️ / 🌙 at the top.',
+    ],
+    km: [
+      'របៀបងងឹត៖ ជ្រើសរើស ស្វ័យប្រវត្តិ ភ្លឺ ឬងងឹត នៅក្នុងការកំណត់ ឬចុច ☀️ / 🌙 នៅខាងលើ។',
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-11-23',
     en: [

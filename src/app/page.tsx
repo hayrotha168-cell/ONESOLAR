@@ -6,6 +6,7 @@ import { Projects } from '@/components/Projects';
 import { Settings } from '@/components/Settings';
 import { AuthGate, useAuth } from '@/lib/auth';
 import { UpdateProvider, useUpdates } from '@/lib/updates';
+import { useTheme } from '@/lib/theme';
 import { LangProvider, useT } from '@/lib/i18n';
 
 type Tab = 'cable' | 'sun' | 'projects' | 'settings';
@@ -30,6 +31,7 @@ export default function Home() {
 function App() {
   const { t, lang, setLang } = useT();
   const { user, required, logout } = useAuth();
+  const { shown, setTheme } = useTheme();
   const [gen, setGen] = useState(0); // bumped to remount the tabs after a project is opened
   const [tab, setTab] = useState<Tab>('cable');
   const [installEvt, setInstallEvt] = useState<InstallPromptEvent | null>(null);
@@ -93,6 +95,10 @@ function App() {
               )}
             </button>
           )}
+          <button className="btn btn-ghost btn-small icon-btn" type="button" aria-label={t.toggleTheme} title={t.toggleTheme}
+            onClick={() => setTheme(shown === 'dark' ? 'light' : 'dark')}>
+            {shown === 'dark' ? '☀️' : '🌙'}
+          </button>
           <button
             className="btn btn-ghost btn-small lang-btn"
             type="button"
