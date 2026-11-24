@@ -17,6 +17,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.5.0',
+    date: '2026-11-24',
+    en: [
+      'Edit saved projects: change the project name, customer, phone, address and notes.',
+    ],
+    km: [
+      'កែសម្រួលគម្រោងដែលបានរក្សាទុក៖ ប្តូរឈ្មោះគម្រោង អតិថិជន ទូរស័ព្ទ អាសយដ្ឋាន និងកំណត់ចំណាំ។',
+    ],
+  },
+  {
     version: '1.4.1',
     date: '2026-11-24',
     en: [

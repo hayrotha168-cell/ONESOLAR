@@ -6,6 +6,7 @@ import type { Price } from './energy';
 export interface Project {
   id: string;
   created: number; // ms since epoch
+  updated?: number; // ms since epoch, when the details were last edited
   name: string;
   customer: string;
   phone: string;

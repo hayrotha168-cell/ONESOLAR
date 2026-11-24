@@ -341,3 +341,4 @@ textarea { resize: vertical; }
 .map-box .leaflet-control-attribution { font-size: 10px; }
 .map-coords { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 2px 0 10px; }
 .map-coords a, .card a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.project-edit { margin: 0; min-width: 0; }
