@@ -14,17 +14,25 @@ import { makeReportPdf, sharePdf } from '@/lib/report';
 import { DEFAULT_PRICE, PRICE_KEY, Price, fmtMoney, monthName, productionStats } from '@/lib/energy';
 import { Stat } from './Stat';
 import { SensorSurvey } from './SensorSurvey';
+import { NumField } from './NumField';
 
 function SceneLoading() {
   const { t } = useT();
   return <div className="scene-loading">{t.loading3d}</div>;
 }
 
+const MapPicker = dynamic(() => import('./MapPicker'), { ssr: false });
 const SunScene3D = dynamic(() => import('./SunScene3D'), { ssr: false, loading: () => <SceneLoading /> });
 
 const DEFAULT_SITE: Site = { lat: 35, lon: 0, tz: 0 };
 const clampZoom = (z: number) => Math.max(0.6, Math.min(4, z)); // same limits as the 3D scene
 const num = (v: number) => v.toLocaleString('en-US');
+
+/** UTC offset for a picked place: the phone's own when the place is in about the same zone, else estimated from longitude. */
+function tzFor(lon: number) {
+  const phone = -new Date().getTimezoneOffset() / 60;
+  return Math.abs(phone - lon / 15) <= 1.5 ? phone : Math.round(lon / 15);
+}
 
 export function SunSurvey() {
   const { t, dir, lang } = useT();
@@ -170,8 +178,6 @@ export function SunSurvey() {
   const [price] = useStored<Price>(PRICE_KEY, DEFAULT_PRICE); // set on the Settings tab
   const cost = Number.isFinite(price.value) && price.value > 0 ? price.value : 0;
   const money = (kwh: number) => fmtMoney(kwh * cost, price.currency);
-  const setArr = (k: 'count' | 'watt' | 'pr') => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setArray((a) => ({ ...a, [k]: parseFloat(e.target.value) }));
   const fKw = (kw: number) => (kw < 1 ? `${Math.round(kw * 1000)} W` : `${kw.toFixed(2)} kW`);
   const hm = (min: number) => t.hm(Math.floor(min / 60), min % 60);
 
@@ -209,6 +215,14 @@ export function SunSurvey() {
     setLocMsg('');
   };
 
+  const [mapOpen, setMapOpen] = useState(false);
+  const pickMap = (lat: number, lon: number) => {
+    const tz = tzFor(lon);
+    setSite({ lat, lon, tz });
+    setMapOpen(false);
+    setLocMsg(t.mapPicked(tz));
+  };
+
   const locate = () => {
     if (!navigator.geolocation) { setLocMsg(t.locNA); return; }
     setLocMsg(t.locFinding);
@@ -222,7 +236,6 @@ export function SunSurvey() {
     );
   };
 
-  const setNum = (k: keyof Site) => (e: React.ChangeEvent<HTMLInputElement>) => setSite((s) => ({ ...s, [k]: parseFloat(e.target.value) }));
   const f1 = (v: number) => v.toFixed(1);
 
   const doSave = async (e: React.FormEvent) => {
@@ -262,24 +275,29 @@ export function SunSurvey() {
       <h1>{t.sunTitle}</h1>
 
       <div className="card grid">
-        <label>{t.lat}<input type="number" inputMode="decimal" step="any" min={-90} max={90} value={site.lat} onChange={setNum('lat')} /></label>
-        <label>{t.lon}<input type="number" inputMode="decimal" step="any" min={-180} max={180} value={site.lon} onChange={setNum('lon')} /></label>
+        <label>{t.lat}<NumField inputMode="decimal" step="any" min={-90} max={90} value={site.lat} onValue={(v) => setSite((s) => ({ ...s, lat: v }))} /></label>
+        <label>{t.lon}<NumField inputMode="decimal" step="any" min={-180} max={180} value={site.lon} onValue={(v) => setSite((s) => ({ ...s, lon: v }))} /></label>
         <label>{t.date}<input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
-        <label>{t.tz}<input type="number" inputMode="decimal" step={0.5} min={-12} max={14} value={site.tz} onChange={setNum('tz')} /></label>
-        <button className="btn full" type="button" onClick={locate}>{t.locate}</button>
+        <label>{t.tz}<NumField inputMode="decimal" step={0.5} min={-12} max={14} value={site.tz} onValue={(v) => setSite((s) => ({ ...s, tz: v }))} /></label>
+        <button className="btn" type="button" onClick={() => setMapOpen(true)}>🗺️ {t.pickOnMap}</button>
+        <button className="btn btn-ghost" type="button" onClick={locate}>📍 {t.locate}</button>
         <button className="btn btn-ghost full" type="button" onClick={resetInputs}>↺ {t.resetInputs}</button>
         {locMsg && <p className="small muted full" style={{ margin: 0 }}>{locMsg}</p>}
       </div>
+      {mapOpen && (
+        <MapPicker lat={site.lat} lon={site.lon} close={site.lon !== Math.round(site.tz * 15) || site.lat !== DEFAULT_SITE.lat}
+          onPick={pickMap} onClose={() => setMapOpen(false)} />
+      )}
 
       <div className="card grid">
         <h2 className="full">{t.orientation}</h2>
         <label>{t.tilt}
-          <input type="number" inputMode="decimal" step={1} min={0} max={90} value={panel.tilt}
-            onChange={(e) => setPanel((p) => ({ ...p, tilt: Math.max(0, Math.min(90, parseFloat(e.target.value) || 0)) }))} />
+          <NumField inputMode="decimal" step={1} min={0} max={90} value={panel.tilt}
+            onValue={(v) => setPanel((p) => ({ ...p, tilt: v }))} />
         </label>
         <label>{t.azimuthN}
-          <input type="number" inputMode="decimal" step={1} min={0} max={360} value={panel.azimuth}
-            onChange={(e) => setPanel((p) => ({ ...p, azimuth: ((parseFloat(e.target.value) || 0) % 360 + 360) % 360 }))} />
+          <NumField inputMode="decimal" step={1} wrap={360} value={panel.azimuth}
+            onValue={(v) => setPanel((p) => ({ ...p, azimuth: v }))} />
         </label>
         <button className="btn btn-ghost full" type="button"
           onClick={() => setPanel({ tilt: recommendedTilt(site.lat), azimuth: recommendedAzimuth(site.lat) })}>
@@ -298,13 +316,13 @@ export function SunSurvey() {
       <div className="card grid">
         <h2 className="full">{t.panelPower}</h2>
         <label>{t.panelCount}
-          <input type="number" inputMode="numeric" step={1} min={0} value={array.count} onChange={setArr('count')} />
+          <NumField inputMode="numeric" step={1} min={0} int value={array.count} onValue={(v) => setArray((a) => ({ ...a, count: v }))} />
         </label>
         <label>{t.panelRating}
-          <input type="number" inputMode="numeric" step={5} min={0} value={array.watt} onChange={setArr('watt')} />
+          <NumField inputMode="numeric" step={5} min={0} value={array.watt} onValue={(v) => setArray((a) => ({ ...a, watt: v }))} />
         </label>
         <label className="full">{t.pr}
-          <input type="number" inputMode="numeric" step={1} min={0} max={100} value={array.pr} onChange={setArr('pr')} />
+          <NumField inputMode="numeric" step={1} min={0} max={100} value={array.pr} onValue={(v) => setArray((a) => ({ ...a, pr: v }))} />
         </label>
         <p className="small muted full" style={{ margin: 0 }}>{t.prHelp}</p>
         <div className="full stats stats-inline">

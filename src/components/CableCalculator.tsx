@@ -4,6 +4,7 @@ import { CableInput, DEFAULT_CABLE, Install, TABLES, sizeCable } from '@/lib/cab
 import { useStored } from '@/lib/useStored';
 import { useT } from '@/lib/i18n';
 import { Stat } from './Stat';
+import { NumField } from './NumField';
 
 const fmt = (v: number, d = 1) =>
   Number.isFinite(v) ? v.toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d }) : '–';
@@ -12,7 +13,7 @@ export function CableCalculator() {
   const { t } = useT();
   const [p, setP] = useStored<CableInput>('onesolar.cable', DEFAULT_CABLE);
   const set = <K extends keyof CableInput>(k: K, v: CableInput[K]) => setP((prev) => ({ ...prev, [k]: v }));
-  const num = (k: keyof CableInput) => (e: React.ChangeEvent<HTMLInputElement>) => set(k, parseFloat(e.target.value) as never);
+  const num = (k: keyof CableInput) => (v: number) => set(k, v as never);
 
   const missing = (['voltage', 'length', 'drop', p.mode] as const).filter((k) => !((p[k] as number) > 0));
   const r = useMemo(() => (missing.length ? null : sizeCable(p)), [p, missing.length]);
@@ -43,32 +44,32 @@ export function CableCalculator() {
         {p.mode === 'current' ? (
           <label>
             {t.current}
-            <input type="number" inputMode="decimal" step="any" min={0} value={p.current} onChange={num('current')} />
+            <NumField inputMode="decimal" step="any" min={0} value={p.current} onValue={num('current')} />
           </label>
         ) : (
           <label>
             {t.power}
-            <input type="number" inputMode="decimal" step="any" min={0} value={p.power} onChange={num('power')} />
+            <NumField inputMode="decimal" step="any" min={0} value={p.power} onValue={num('power')} />
           </label>
         )}
 
         <label>
           {t.voltage}{p.system === 'ac3' ? t.lineLine : ''}
-          <input type="number" inputMode="decimal" step="any" min={0} value={p.voltage} onChange={num('voltage')} />
+          <NumField inputMode="decimal" step="any" min={0} value={p.voltage} onValue={num('voltage')} />
         </label>
         <label>
           {t.length}
-          <input type="number" inputMode="decimal" step="any" min={0} value={p.length} onChange={num('length')} />
+          <NumField inputMode="decimal" step="any" min={0} value={p.length} onValue={num('length')} />
         </label>
 
         <label>
           {t.drop}
-          <input type="number" inputMode="decimal" step="any" min={0.1} value={p.drop} onChange={num('drop')} />
+          <NumField inputMode="decimal" step="any" min={0.1} value={p.drop} onValue={num('drop')} />
         </label>
         {p.system !== 'dc' ? (
           <label>
             {t.pf}
-            <input type="number" inputMode="decimal" step={0.01} min={0.1} max={1} value={p.pf} onChange={num('pf')} />
+            <NumField inputMode="decimal" step={0.01} min={0.1} max={1} value={p.pf} onValue={num('pf')} />
           </label>
         ) : (
           <div />
@@ -92,12 +93,11 @@ export function CableCalculator() {
 
         <label>
           {p.install === 'buried' ? t.groundTemp : t.ambientTemp}
-          <input type="number" inputMode="decimal" step={1} value={p.ambient} onChange={num('ambient')} />
+          <NumField inputMode="decimal" step={1} value={p.ambient} onValue={num('ambient')} />
         </label>
         <label>
           {t.grouped}
-          <input type="number" inputMode="numeric" step={1} min={1} value={p.grouped}
-            onChange={(e) => set('grouped', Math.max(1, Math.round(parseFloat(e.target.value) || 1)))} />
+          <NumField inputMode="numeric" step={1} min={1} int value={p.grouped} onValue={num('grouped')} />
         </label>
 
         <label className="full">

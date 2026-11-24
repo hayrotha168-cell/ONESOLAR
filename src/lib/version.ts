@@ -17,6 +17,18 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.4.0',
+    date: '2026-11-24',
+    en: [
+      'Choose the site on a map: search a place, tap or drag the pin on the roof, satellite view and your current location.',
+      'Number boxes can be cleared and retyped (Tilt, Azimuth and all others).',
+    ],
+    km: [
+      'ជ្រើសរើសទីតាំងលើផែនទី៖ ស្វែងរកទីកន្លែង ចុច ឬអូសម្ជុលលើដំបូល ទិដ្ឋភាពផ្កាយរណប និងទីតាំងបច្ចុប្បន្នរបស់អ្នក។',
+      'ប្រអប់លេខអាចលុប ហើយវាយបញ្ចូលថ្មីបាន (មុំទេរ ទិស និងប្រអប់ផ្សេងទៀត)។',
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-11-23',
     en: [

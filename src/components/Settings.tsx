@@ -5,6 +5,7 @@ import { useT } from '@/lib/i18n';
 import { useStored } from '@/lib/useStored';
 import { useUpdates } from '@/lib/updates';
 import { Theme, useTheme } from '@/lib/theme';
+import { NumField } from './NumField';
 import { APP_VERSION, BUILD_TIME, CHANGELOG, COMMIT } from '@/lib/version';
 
 const RIEL_PER_USD = 4100;
@@ -33,8 +34,8 @@ export function Settings() {
       <div className="card grid">
         <h2 className="full">{t.elecTariff}</h2>
         <label>{t.elecPrice}
-          <input type="number" inputMode="decimal" step="any" min={0} value={price.value}
-            onChange={(e) => setPrice((p) => ({ ...p, value: parseFloat(e.target.value) }))} />
+          <NumField inputMode="decimal" step="any" min={0} value={price.value}
+            onValue={(v) => setPrice((p) => ({ ...p, value: v }))} />
         </label>
         <label>{t.currencyLabel}
           <select value={price.currency} onChange={(e) => changeCurrency(e.target.value as Currency)}>
