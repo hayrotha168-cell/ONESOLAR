@@ -102,6 +102,35 @@ async function readSession(req: Request, token: string): Promise<SessionUser | n
 const cookieHeader = (value: string, maxAge: number) =>
   `${COOKIE}=${value}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
 
+/**
+ * Follows a short Google Maps share link (maps.app.goo.gl/…) and returns where it leads, so the app can read
+ * the coordinates. Browsers cannot do this themselves (cross-site). Only Google hosts are ever fetched.
+ */
+const SHORT_HOSTS = new Set(['maps.app.goo.gl', 'goo.gl']);
+const googleHost = (h: string) => SHORT_HOSTS.has(h) || /^(?:www\.|maps\.)?google\.[a-z]{2,3}(?:\.[a-z]{2})?$/.test(h);
+
+async function resolveMapLink(raw: string): Promise<Response> {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return json({ error: 'Not a link' }, 400);
+  }
+  if (url.protocol !== 'https:' || !SHORT_HOSTS.has(url.hostname) || (url.hostname === 'goo.gl' && !url.pathname.startsWith('/maps'))) {
+    return json({ error: 'Only Google Maps share links are supported' }, 400);
+  }
+  for (let hop = 0; hop < 5; hop++) {
+    const r = await fetch(url.toString(), { redirect: 'manual', headers: { 'user-agent': 'Mozilla/5.0 (compatible; ONE SOLAR)' } });
+    const loc = r.headers.get('location');
+    if (!loc || r.status < 300 || r.status > 399) break;
+    const next = new URL(loc, url);
+    if (next.protocol !== 'https:' || !googleHost(next.hostname)) break;
+    url = next;
+    if (!SHORT_HOSTS.has(url.hostname)) break; // reached the full google.com/maps link
+  }
+  return json({ url: url.toString() }, 200, { 'cache-control': 'public, max-age=86400' });
+}
+
 async function api(req: Request, env: Env, path: string): Promise<Response> {
   const token = env.TELEGRAM_BOT_TOKEN?.trim();
 
@@ -109,6 +138,8 @@ async function api(req: Request, env: Env, path: string): Promise<Response> {
     // The bot id (the part before ":") is public; the rest of the token is secret.
     return json({ botId: token ? token.split(':')[0] : null });
   }
+  if (path === '/api/maplink') return resolveMapLink(new URL(req.url).searchParams.get('u') ?? '');
+
   if (!token) return json({ error: 'Sign-in is not configured' }, 404);
 
   if (path === '/api/auth/telegram' && req.method === 'POST') {

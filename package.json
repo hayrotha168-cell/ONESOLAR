@@ -1,13 +1,13 @@
 {
   "name": "onesolar",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/check-cable.mts && node scripts/check-orientation.mts && node scripts/check-auth.mts",
+    "test": "node scripts/check-cable.mts && node scripts/check-orientation.mts && node scripts/check-auth.mts && node scripts/check-gmaps.mts",
     "deploy": "next build && wrangler deploy"
   },
   "dependencies": {

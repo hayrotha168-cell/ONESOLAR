@@ -15,6 +15,7 @@ import { DEFAULT_PRICE, PRICE_KEY, Price, fmtMoney, monthName, productionStats }
 import { Stat } from './Stat';
 import { SensorSurvey } from './SensorSurvey';
 import { NumField } from './NumField';
+import { googleMapsUrl } from '@/lib/gmaps';
 
 function SceneLoading() {
   const { t } = useT();
@@ -283,6 +284,12 @@ export function SunSurvey() {
         <button className="btn btn-ghost" type="button" onClick={locate}>📍 {t.locate}</button>
         <button className="btn btn-ghost full" type="button" onClick={resetInputs}>↺ {t.resetInputs}</button>
         {locMsg && <p className="small muted full" style={{ margin: 0 }}>{locMsg}</p>}
+        {valid && (
+          <p className="small full" style={{ margin: 0 }}>
+            <a href={googleMapsUrl(site.lat, site.lon)} target="_blank" rel="noopener noreferrer">📍 {t.openGoogleMaps} ↗</a>
+            <span className="muted"> · {t.googleTip}</span>
+          </p>
+        )}
       </div>
       {mapOpen && (
         <MapPicker lat={site.lat} lon={site.lon} close={site.lon !== Math.round(site.tz * 15) || site.lat !== DEFAULT_SITE.lat}

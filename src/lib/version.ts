@@ -17,6 +17,18 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '1.4.1',
+    date: '2026-11-24',
+    en: [
+      'Paste a Google Maps link (Share → Copy link) or coordinates into the map search to place the pin.',
+      'Open in Google Maps from the map and the Sun survey.',
+    ],
+    km: [
+      'បិទភ្ជាប់តំណ Google Maps (ចែករំលែក → ចម្លងតំណ) ឬកូអរដោនេ ក្នុងប្រអប់ស្វែងរកផែនទី ដើម្បីដាក់ម្ជុល។',
+      'បើកក្នុង Google Maps ពីផែនទី និងការសិក្សាព្រះអាទិត្យ។',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-11-24',
     en: [
